@@ -2,6 +2,7 @@
 #include <Adafruit_BMP280.h> // BMP280_ADDRESS (0x76)
 #include <Adafruit_SHT31.h>
 #include <BH1750.h>
+#include <LowPower.h>
 #include "communication.h"
 
 #define DEVICE_ID "45C5"
@@ -65,7 +66,7 @@ void loop() {
     uint16_t lux = _bh1750.readLightLevel();
     int uvLevel = averageAnalogRead(UVOUT);
     int refLevel = averageAnalogRead(REF_3V3);
-    unsigned long sample_interval = _comm.get_sample_interval();
+    unsigned int sample_interval = _comm.get_sample_interval();
 
     // Read battery voltage
     int battery = averageAnalogRead(BATTERY);
@@ -96,7 +97,10 @@ void loop() {
     digitalWrite(ERR_LED, err? HIGH:LOW);
 
     // Wait until next sample
-    delay((unsigned long)(sample_interval * 60 * 1000));
+    for (unsigned int i = 0 ;  i  <  sample_interval * 60 / 8; i++) {
+             LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
+    }
+
 }
 
 
@@ -107,6 +111,7 @@ int averageAnalogRead(int pinToRead) {
 
     for(int x = 0 ; x < numberOfReadings ; x++) {
         runningValue += analogRead(pinToRead);
+        delay(200);
     }
     runningValue /= numberOfReadings;
 
