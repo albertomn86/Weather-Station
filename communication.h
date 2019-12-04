@@ -8,10 +8,11 @@
  */
 #ifndef COMMUNICATION_H
 #define COMMUNICATION_H
+#include <Arduino.h>
 #include <SoftwareSerial.h>
 
-#define HEADER_PAIRING "S0;"
-#define HEADER_MSGDATA "S1;"
+#define HEADER_PAIRING  "S0;"
+#define HEADER_MSGDATA  "S1;"
 #define HEADER_RESPONSE "R0;"
 #define SEP_CHAR ';'
 #define END_CHAR '#'

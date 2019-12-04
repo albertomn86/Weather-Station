@@ -33,7 +33,7 @@
   (0x76)                     /**< Alternative I2C address for the sensor. */
 #define BMP280_CHIPID (0x58) /**< Default chip ID. */
 
-//  Forward declarations of Wire and SPI for board/variant combinations that don't have a default 'Wire' or 'SPI'
+//  Forward declarations of Wire and SPI for board/variant combinations that don't have a default 'Wire' or 'SPI' 
 extern TwoWire Wire;  /**< Forward declaration of Wire object */
 extern SPIClass SPI;  /**< Forward declaration of SPI object */
 
@@ -170,7 +170,7 @@ public:
                    sensor_sampling pressSampling = SAMPLING_X16,
                    sensor_filter filter = FILTER_OFF,
                    standby_duration duration = STANDBY_MS_1);
-
+  
   TwoWire *_wire; /**< Wire object */
   SPIClass *_spi; /**< SPI object */
 

@@ -104,7 +104,7 @@ void loop() {
 
     // Wait until next sample
     for (unsigned int i = 0 ;  i  <  sample_interval * 60 / 8; i++) {
-        LowPower.powerDown(SLEEP_8S, ADC_OFF);
+        LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
     }
 }
 
