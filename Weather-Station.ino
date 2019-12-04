@@ -20,6 +20,7 @@
 #define ERR_UV       0x04
 #define ERR_LIGH     0x08
 #define ERR_COMM     0x10
+#define ERR_BATTERY  0x20
 
 Adafruit_SHT31 _sht31 = Adafruit_SHT31();
 Adafruit_BMP280 _bmp280;
@@ -71,11 +72,16 @@ void loop() {
     // Read battery voltage
     int battery = averageAnalogRead(BATTERY);
     float battery_level = (battery * 5) / 1024.0;
+    if (battery_level < 3.5) {
+        err |= ERR_BATTERY;
+    }
 
     // Read UV sensor voltage
     float outputVoltage = 3.3 / refLevel * uvLevel;
     float uvIntensity = mapfloat(outputVoltage, 0.99, 2.9, 0.0, 15.0);
-    if (uvIntensity < 0) uvIntensity = 0;
+    if (uvIntensity < 0) {
+        uvIntensity = 0;
+    }
 
     // Generate message
     String output;
@@ -98,9 +104,8 @@ void loop() {
 
     // Wait until next sample
     for (unsigned int i = 0 ;  i  <  sample_interval * 60 / 8; i++) {
-             LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
+        LowPower.powerDown(SLEEP_8S, ADC_OFF);
     }
-
 }
 
 
@@ -109,7 +114,7 @@ int averageAnalogRead(int pinToRead) {
     byte numberOfReadings = 8;
     unsigned int runningValue = 0;
 
-    for(int x = 0 ; x < numberOfReadings ; x++) {
+    for(int i = 0; i < numberOfReadings; i++) {
         runningValue += analogRead(pinToRead);
         delay(200);
     }
