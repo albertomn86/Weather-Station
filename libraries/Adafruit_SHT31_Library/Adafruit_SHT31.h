@@ -99,6 +99,13 @@ public:
 
   TwoWire *_wire; /**< Wire object */
 
+  /**
+   * Internal function to perform a temp + humidity read.
+   *
+   * @return True if successful, otherwise false.
+   */
+  bool readTempHum(void);
+
 private:
   /**
    * Placeholder to track humidity internally.
@@ -114,13 +121,6 @@ private:
    * Placeholder to track the I2C address.
    */
   uint8_t _i2caddr;
-
-  /**
-   * Internal function to perform a temp + humidity read.
-   *
-   * @return True if successful, otherwise false.
-   */
-  bool readTempHum(void);
 
   /**
    * Internal function to perform and I2C write.

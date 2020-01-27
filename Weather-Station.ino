@@ -7,13 +7,12 @@
 
 #define DEVICE_ID "45C5"
 
-#define ERR_LED 5
 #define HC12_AT 6
 #define HC12_RX 10
 #define HC12_TX 11
 #define UVOUT   A0 // Output from the sensor
-#define REF_3V3 A1 // 3.3V power on the Arduino board.
-#define BATTERY A3 // Analog read for battery status.
+#define BATTERY A3 // Analog read for battery status
+#define REF3V3  3.31
 
 #define ERR_PRESSURE 0x01
 #define ERR_HUMIDITY 0x02
@@ -32,16 +31,10 @@ byte err;
 void setup() {
     err = 0;
 
-    pinMode(ERR_LED, OUTPUT);
     pinMode(HC12_AT, OUTPUT);
 
     pinMode(UVOUT, INPUT);
-    pinMode(REF_3V3, INPUT);
-
-    _comm.begin(DEVICE_ID, HC12_AT);
-    if (!_comm.pairing()) {
-        err |= ERR_COMM;
-    }
+    pinMode(BATTERY, INPUT);
 
     if(!_sht31.begin(0x44)){
         err |= ERR_HUMIDITY;
@@ -53,31 +46,38 @@ void setup() {
 
     _bh1750.begin();
 
+    _comm.begin(DEVICE_ID, HC12_AT);
+
+    if (!_comm.pairing()) {
+        err |= ERR_COMM;
+    }
+
     if (err) {
-        digitalWrite(ERR_LED, HIGH);
+        digitalWrite(13, HIGH);
     }
 }
 
 
 void loop() {
 
-    float humidity = _sht31.readHumidity();
+    while (! _sht31.readTempHum());
     float temperature = _sht31.readTemperature();
+    float humidity = _sht31.readHumidity();
     float pressure = _bmp280.readPressure();
     uint16_t lux = _bh1750.readLightLevel();
-    int uvLevel = averageAnalogRead(UVOUT);
-    int refLevel = averageAnalogRead(REF_3V3);
     unsigned int sample_interval = _comm.get_sample_interval();
 
     // Read battery voltage
-    int battery = averageAnalogRead(BATTERY);
-    float battery_level = (battery * 5) / 1024.0;
-    if (battery_level < 3.5) {
+    float battery = averageAnalogRead(BATTERY) * REF3V3 / 1024.0;
+    // R1 = 463K
+    // R2 = 1490K
+    battery = (battery * 1953) / 1490;
+    if (battery < 3.5) {
         err |= ERR_BATTERY;
     }
 
     // Read UV sensor voltage
-    float outputVoltage = 3.3 / refLevel * uvLevel;
+    float outputVoltage = averageAnalogRead(UVOUT) * REF3V3 / 1024.0;
     float uvIntensity = mapfloat(outputVoltage, 0.99, 2.9, 0.0, 15.0);
     if (uvIntensity < 0) {
         uvIntensity = 0;
@@ -87,7 +87,7 @@ void loop() {
     String output;
     output = String(sample_interval) + SEP_CHAR;
     output += String(err, DEC) + SEP_CHAR;
-    output += String(battery_level, 2) + SEP_CHAR;
+    output += String(battery, 2) + SEP_CHAR;
     output += String(temperature, 2) + SEP_CHAR;
     output += String(humidity, 2) + SEP_CHAR;
     output += String(pressure, 2) + SEP_CHAR;
@@ -99,12 +99,9 @@ void loop() {
         err |= ERR_COMM;
     }
 
-    // Check errors
-    digitalWrite(ERR_LED, err? HIGH:LOW);
-
     // Wait until next sample
     for (unsigned int i = 0 ;  i  <  sample_interval * 60 / 8; i++) {
-        LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_ON);
+        LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
     }
 }
 
