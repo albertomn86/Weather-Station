@@ -7,7 +7,7 @@
 
 #define DEVICE_ID "45C5"
 
-#define HC12_AT 6
+#define HC12_AT 9
 #define HC12_RX 10
 #define HC12_TX 11
 #define UVOUT   A0 // Output from the sensor
