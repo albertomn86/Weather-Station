@@ -1,9 +1,8 @@
 #include <Arduino.h>
-#include <Adafruit_BMP280.h> // BMP280_ADDRESS (0x76)
-#include <Adafruit_SHT31.h>
+#include <Adafruit_BME280.h>
 #include <BH1750.h>
 #include <LowPower.h>
-#include "communication.h"
+#include <Communication.h>
 
 #define DEVICE_ID "45C5"
 
@@ -14,40 +13,41 @@
 #define BATTERY A3 // Analog read for battery status
 #define REF3V3  3.31
 
-#define ERR_PRESSURE 0x01
-#define ERR_HUMIDITY 0x02
+#define ERR_BATTERY  0x01
+#define ERR_TEMPHUM  0x02
 #define ERR_UV       0x04
 #define ERR_LIGH     0x08
 #define ERR_COMM     0x10
-#define ERR_BATTERY  0x20
 
-Adafruit_SHT31 _sht31 = Adafruit_SHT31();
-Adafruit_BMP280 _bmp280;
+
+Adafruit_BME280 _bme280;
 BH1750 _bh1750;
 Communication _comm = Communication(HC12_RX, HC12_TX);
 byte err;
 
 
 void setup() {
+    Wire.begin();
     err = 0;
-
     pinMode(HC12_AT, OUTPUT);
-
     pinMode(UVOUT, INPUT);
     pinMode(BATTERY, INPUT);
 
-    if(!_sht31.begin(0x44)){
-        err |= ERR_HUMIDITY;
+    if (!_bme280.begin(0x76)) {  // BME280_ADDRESS (0x76)
+        err |= ERR_TEMPHUM;
     }
 
-    if(!_bmp280.begin(BMP280_ADDRESS_ALT, BMP280_CHIPID)){
-        err |= ERR_PRESSURE;
-    }
+    _bme280.setSampling(Adafruit_BME280::MODE_FORCED,
+                        Adafruit_BME280::SAMPLING_X1, // Temperature
+                        Adafruit_BME280::SAMPLING_X1, // Pressure
+                        Adafruit_BME280::SAMPLING_X1, // Humidity
+                        Adafruit_BME280::FILTER_OFF);
 
-    _bh1750.begin();
+    if (!_bh1750.begin(BH1750::ONE_TIME_LOW_RES_MODE)) { // Measurement at 4 lux resolution
+        err |= ERR_LIGH;
+    }
 
     _comm.begin(DEVICE_ID, HC12_AT);
-
     if (!_comm.pairing()) {
         err |= ERR_COMM;
     }
@@ -60,24 +60,29 @@ void setup() {
 
 void loop() {
 
-    while (! _sht31.readTempHum());
-    float temperature = _sht31.readTemperature();
-    float humidity = _sht31.readHumidity();
-    float pressure = _bmp280.readPressure();
-    uint16_t lux = _bh1750.readLightLevel();
+    // Read samples from BME280
+    _bme280.takeForcedMeasurement();
+    float temperature = _bme280.readTemperature();
+    float humidity = _bme280.readHumidity();
+    float pressure = _bme280.readPressure() / 100.0F;
+
+    // Read luminosity
+    float lux = _bh1750.readLightLevel();
+
+    // Get sample interval from last message
     unsigned int sample_interval = _comm.get_sample_interval();
 
     // Read battery voltage
-    float battery = averageAnalogRead(BATTERY) * REF3V3 / 1024.0;
+    float battery = averageAnalogRead(BATTERY) * REF3V3 / 1024.0F;
     // R1 = 463K
     // R2 = 1490K
-    battery = (battery * 1953) / 1490;
+    battery = (battery * 1953.0F) / 1490.0F;
     if (battery < 3.5) {
         err |= ERR_BATTERY;
     }
 
     // Read UV sensor voltage
-    float outputVoltage = averageAnalogRead(UVOUT) * REF3V3 / 1024.0;
+    float outputVoltage = averageAnalogRead(UVOUT) * REF3V3 / 1024.0F;
     float uvIntensity = mapfloat(outputVoltage, 0.99, 2.9, 0.0, 15.0);
     if (uvIntensity < 0) {
         uvIntensity = 0;
@@ -91,7 +96,7 @@ void loop() {
     output += String(temperature, 2) + SEP_CHAR;
     output += String(humidity, 2) + SEP_CHAR;
     output += String(pressure, 2) + SEP_CHAR;
-    output += String(lux) + SEP_CHAR;
+    output += String(lux, 2) + SEP_CHAR;
     output += String(uvIntensity, 4);
 
     // Send message
