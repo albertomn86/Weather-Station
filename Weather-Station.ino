@@ -11,7 +11,7 @@
 #define HC12_TX 11
 #define UVOUT   A0 // Output from the sensor
 #define BATTERY A3 // Analog read for battery status
-#define REF3V3  3.31
+#define REF3V3  3.317
 
 #define ERR_BATTERY  0x01
 #define ERR_TEMPHUM  0x02
@@ -48,6 +48,8 @@ void setup() {
     }
 
     _comm.begin(DEVICE_ID, HC12_AT);
+    _comm.setup_mode();
+    _comm.setup_power(6);
     if (!_comm.pairing()) {
         err |= ERR_COMM;
     }

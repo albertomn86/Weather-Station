@@ -39,5 +39,8 @@ class Communication {
         bool pairing(void);
         bool send_msg(String data);
         unsigned int get_sample_interval(void);
+        void setup_mode(void);
+        void setup_power(short power);
+
 };
 #endif

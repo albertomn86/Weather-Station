@@ -110,13 +110,14 @@ bool Communication::send(String message) {
     wakeup();
     while(attempts > 0) {
         _serial.print(message);
+        // In FU1 mode, the max transmision data delay is 25 ms/byte.
+        delay((unsigned long)(25 * message.length()));
         // Wait for reply.
         if (receive()) {
             sleep_mode();
             return true;
         }
         // Next attempt.
-        delay(5000);
         attempts--;
     }
     sleep_mode();
@@ -158,4 +159,43 @@ bool Communication::pairing() {
  */
 unsigned int Communication::get_sample_interval(void) {
     return interval;
+}
+
+
+/**
+ * @brief Change serial port transparent transmission mode.
+ *
+ */
+void Communication::setup_mode(void) {
+    digitalWrite(AT_PIN, LOW);
+    delay(100);
+    // Send command
+    _serial.print("AT+FU1");
+    delay(100);
+    // Read response
+    while(_serial.available() > 0) {
+        char c = _serial.read();
+    }
+    digitalWrite(AT_PIN, HIGH);
+    delay(100);
+}
+
+
+/**
+ * @brief Set transmitting power of module.
+ *
+ * @param power Power value from 1 to 8.
+ */
+void Communication::setup_power(short power) {
+    digitalWrite(AT_PIN, LOW);
+    delay(100);
+    // Send command
+    _serial.print("AT+P" + String(power));
+    delay(100);
+    // Read response
+    while(_serial.available() > 0) {
+        char c = _serial.read();
+    }
+    digitalWrite(AT_PIN, HIGH);
+    delay(100);
 }
