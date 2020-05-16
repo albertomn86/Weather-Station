@@ -6,7 +6,7 @@
 
 #define DEVICE_ID "45C5"
 
-#define HC12_AT 9
+#define HC12_SET 9
 #define HC12_RX 10
 #define HC12_TX 11
 #define UVOUT   A0 // Output from the sensor
@@ -22,14 +22,14 @@
 
 Adafruit_BME280 _bme280;
 BH1750 _bh1750;
-Communication _comm = Communication(HC12_RX, HC12_TX);
+Communication _comm = Communication(HC12_RX, HC12_TX, HC12_SET);
 byte err;
 
 
 void setup() {
     Wire.begin();
     err = 0;
-    pinMode(HC12_AT, OUTPUT);
+    pinMode(HC12_SET, OUTPUT);
     pinMode(UVOUT, INPUT);
     pinMode(BATTERY, INPUT);
 
@@ -47,9 +47,7 @@ void setup() {
         err |= ERR_LIGH;
     }
 
-    _comm.begin(DEVICE_ID, HC12_AT);
-    _comm.setup_mode();
-    _comm.setup_power(6);
+    _comm.begin(DEVICE_ID);
     if (!_comm.pairing()) {
         err |= ERR_COMM;
     }

@@ -10,6 +10,7 @@
 #define COMMUNICATION_H
 #include <Arduino.h>
 #include <SoftwareSerial.h>
+#include <HC12.hpp>
 
 #define HEADER_PAIRING  "S0;"
 #define HEADER_MSGDATA  "S1;"
@@ -21,21 +22,17 @@ class Communication {
 
     private:
 
-        SoftwareSerial _serial;
         String station_id;
         String token;
         unsigned int interval;
-        unsigned int AT_PIN;
-
-        void sleep_mode(void);
-        void wakeup(void);
-        bool send(String message);
-        bool receive(void);
+        HC12 radio;
+        bool send(String data);
 
     public:
 
-        Communication(int rxPin, int txPin);
-        void begin(String device_id, int atPin);
+        Communication(uint8_t rxPin, uint8_t txPin, uint8_t setPin);
+        bool receive_ack(void);
+        void begin(String device_id);
         bool pairing(void);
         bool send_msg(String data);
         unsigned int get_sample_interval(void);
