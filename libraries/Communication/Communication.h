@@ -10,7 +10,7 @@
 #define COMMUNICATION_H
 #include <Arduino.h>
 #include <SoftwareSerial.h>
-#include "../HC12/HC12.hpp"
+#include <HC12.hpp>
 
 #define HEADER_PAIRING  "S0;"
 #define HEADER_MSGDATA  "S1;"
