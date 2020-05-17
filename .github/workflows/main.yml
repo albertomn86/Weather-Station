@@ -22,9 +22,20 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
     
-    - name: Checkout submodules
-      uses: textbook/git-checkout-submodule-action@master
-      
+    - name: Checkout BH1750 custom library
+      uses: actions/checkout@v2
+      with:
+        repository: claws/BH1750
+        ref: master
+        path: BH1750CustomLibrary
+
+    - name: Checkout HC12 custom library
+      uses: actions/checkout@v2
+      with:
+        repository: albertomn86/HC12
+        ref: master
+        path: HC12CustomLibrary
+  
     - name: Test compile for Arduino
       uses: ArminJo/arduino-test-compile@v2.2.0
       with:
@@ -32,4 +43,4 @@ jobs:
         sketch-names: Weather-Station.ino
         # Fully Qualified Board Name of the Arduino board. You may add a suffix behind the fqbn with "|" to specify one board for e.g. different compile options like arduino:avr:uno|trace.
         arduino-board-fqbn: arduino:avr:pro
-        required-libraries: Adafruit Unified Sensor
+        required-libraries: Adafruit Unified Sensor,Adafruit BME280 Library,Low-Power
