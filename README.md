@@ -15,3 +15,8 @@ Arduino based weather station
 ## Wiring design
 
 ![Design](Station_bb.png)
+
+
+## PCB design
+
+![Design](Station_pcb.png)
