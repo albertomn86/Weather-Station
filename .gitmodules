@@ -13,3 +13,6 @@
 [submodule "libraries/HC12"]
 	path = libraries/HC12
 	url = https://github.com/albertomn86/HC12.git
+[submodule "arduino-cmake"]
+	path = arduino-cmake
+	url = git://github.com/queezythegreat/arduino-cmake.git
