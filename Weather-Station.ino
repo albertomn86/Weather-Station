@@ -49,9 +49,6 @@ void setup() {
     }
 
     _comm.begin(DEVICE_ID);
-    if (!_comm.pairing()) {
-        err |= ERR_COMM;
-    }
 
     if (err) {
         digitalWrite(13, HIGH);
@@ -71,7 +68,7 @@ void loop() {
     float lux = _bh1750.readLightLevel();
 
     // Get sample interval from last message
-    unsigned int sample_interval = _comm.get_sample_interval();
+    unsigned int sample_interval = _comm.getSampleInterval();
 
     // Read battery voltage
     float battery = averageAnalogRead(BATTERY) * REF3V3 / 1024.0F;
@@ -91,17 +88,17 @@ void loop() {
 
     // Generate message
     String output;
-    output = String(sample_interval) + SEP_CHAR;
-    output += String(err, DEC) + SEP_CHAR;
-    output += String(battery, 2) + SEP_CHAR;
-    output += String(temperature, 2) + SEP_CHAR;
-    output += String(humidity, 2) + SEP_CHAR;
-    output += String(pressure, 2) + SEP_CHAR;
-    output += String(lux, 2) + SEP_CHAR;
-    output += String(uvIntensity, 4);
+    output =  "I" + String(sample_interval) + SEP_CHAR;
+    output += "S" + String(err, DEC) + SEP_CHAR;
+    output += "B" + String(battery * 10) + SEP_CHAR;
+    output += "T" + String(temperature * 10) + SEP_CHAR;
+    output += "H" + String(humidity * 10) + SEP_CHAR;
+    output += "P" + String(pressure * 10) + SEP_CHAR;
+    output += "L" + String(lux) + SEP_CHAR;
+    output += "U" + String(uvIntensity * 10);
 
     // Send message
-    if (!_comm.send_msg(output)) {
+    if (!_comm.sendMessage(output)) {
         err |= ERR_COMM;
     }
 
