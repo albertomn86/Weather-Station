@@ -32,4 +32,4 @@ jobs:
         sketch-names: Weather-Station.ino
         # Fully Qualified Board Name of the Arduino board. You may add a suffix behind the fqbn with "|" to specify one board for e.g. different compile options like arduino:avr:uno|trace.
         arduino-board-fqbn: arduino:avr:pro
-        required-libraries: Adafruit Unified Sensor,Adafruit BME280 Library,Low-Power
+        required-libraries: Adafruit Unified Sensor,Adafruit BME280 Library,Low-Power,BH1750

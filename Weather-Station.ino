@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include <Adafruit_BME280.h>
+#include <BH1750.h>
 #include <LowPower.h>
-#include "./libraries/Communication/Communication.h"
-#include "./libraries/BH1750/BH1750.h"
-#include "./libraries/HC12/HC12.hpp"
+#include "./src/Communication/Communication.h"
+#include "./src/HC12/HC12.hpp"
 
 #define DEVICE_ID "45C5"
 
