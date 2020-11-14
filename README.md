@@ -1,6 +1,7 @@
 # Weather-Station
-Arduino based weather station
+![CI](https://github.com/albertomn86/Weather-Station/workflows/CI/badge.svg?branch=master)
 
+Arduino based weather station. Data from sensors is sent to the [receiver](https://github.com/albertomn86/Weather-Station-Receiver) using RF (433 MHz).
 
 ## Components
 
