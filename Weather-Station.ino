@@ -90,12 +90,12 @@ void loop() {
     String output;
     output =  "I" + String(sample_interval) + SEP_CHAR;
     output += "S" + String(err, DEC) + SEP_CHAR;
-    output += "B" + String(battery * 10) + SEP_CHAR;
-    output += "T" + String(temperature * 10) + SEP_CHAR;
-    output += "H" + String(humidity * 10) + SEP_CHAR;
-    output += "P" + String(pressure * 10) + SEP_CHAR;
-    output += "L" + String(lux) + SEP_CHAR;
-    output += "U" + String(uvIntensity * 10);
+    output += "B" + convertValue(battery) + SEP_CHAR;
+    output += "T" + convertValue(temperature) + SEP_CHAR;
+    output += "H" + convertValue(humidity) + SEP_CHAR;
+    output += "P" + convertValue(pressure) + SEP_CHAR;
+    output += "L" + convertValue(lux) + SEP_CHAR;
+    output += "U" + convertValue(uvIntensity);
 
     // Send message
     if (!_comm.sendMessage(output)) {
@@ -103,9 +103,24 @@ void loop() {
     }
 
     // Wait until next sample
-    for (unsigned int i = 0 ;  i  <  sample_interval * 60 / 8; i++) {
+    for (unsigned int i = 0 ;  i  <  sample_interval / 8; i++) {
         LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
     }
+}
+
+
+String convertValue(float original)
+{
+   String value = String(original, 2);
+   String clean = "";
+   for (int i = 0; i < value.length(); i++)
+   {
+        if (value[i] != '.')
+        {
+            clean += value[i];
+        }
+   }
+   return clean;
 }
 
 
