@@ -1,10 +1,8 @@
 #include "Communication.h"
 
-
-Communication::Communication(uint8_t rxPin, uint8_t txPin, uint8_t setPin) :
-    radio(HC12(rxPin, txPin, setPin))
-{}
-
+Communication::Communication(uint8_t rxPin, uint8_t txPin, uint8_t setPin) : radio(HC12(rxPin, txPin, setPin))
+{
+}
 
 void Communication::begin(String device_id)
 {
@@ -15,8 +13,8 @@ void Communication::begin(String device_id)
     radio.set_power(6);
 }
 
-
-bool Communication::receiveResponse() {
+bool Communication::receiveResponse()
+{
     String response = radio.receive(1000, END_CHAR);
     String response_header = HEADER_RESPONSE + station_id;
     if (response.startsWith(response_header) && response.endsWith(String(END_CHAR)))
@@ -28,10 +26,10 @@ bool Communication::receiveResponse() {
     return false;
 }
 
-
-bool Communication::processPayload(String payload) {
-    char * payloadStr = const_cast<char*>(payload.c_str());
-    char * pch = NULL;
+bool Communication::processPayload(String payload)
+{
+    char *payloadStr = const_cast<char *>(payload.c_str());
+    char *pch = NULL;
     bool requiredFound = false;
     pch = strtok(payloadStr, ";");
     while (pch != NULL)
@@ -46,29 +44,32 @@ bool Communication::processPayload(String payload) {
     return requiredFound;
 }
 
-
-bool Communication::sendMessage(String data) {
+bool Communication::sendMessage(String data)
+{
     String msg = HEADER_MSGDATA + station_id + data + END_CHAR;
     return Communication::sendFrame(msg);
 }
 
-
-bool Communication::sendFrame(String message) {
+bool Communication::sendFrame(String message)
+{
     int attempts = 10;
     radio.wakeup();
-    while(attempts > 0) {
+    while (attempts > 0)
+    {
         radio.send(message);
-        if (receiveResponse()) {
+        if (receiveResponse())
+        {
             radio.sleep();
             return true;
         }
         attempts--;
+        delay(1000);
     }
     radio.sleep();
     return false;
 }
 
-
-unsigned int Communication::getSampleInterval(void) {
+unsigned int Communication::getSampleInterval(void)
+{
     return interval;
 }
