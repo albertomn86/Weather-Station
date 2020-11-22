@@ -10,31 +10,31 @@
 #define HC12_SET 9
 #define HC12_RX 10
 #define HC12_TX 11
-#define UVOUT   A0 // Output from the sensor
+#define UVOUT A0   // Output from the sensor
 #define BATTERY A3 // Analog read for battery status
-#define REF3V3  3.317
+#define REF3V3 3.317
 
-#define ERR_BATTERY  0x01
-#define ERR_TEMPHUM  0x02
-#define ERR_UV       0x04
-#define ERR_LIGH     0x08
-#define ERR_COMM     0x10
-
+#define ERR_BATTERY 0x01
+#define ERR_TEMPHUM 0x02
+#define ERR_UV 0x04
+#define ERR_LIGH 0x08
+#define ERR_COMM 0x10
 
 Adafruit_BME280 _bme280;
 BH1750 _bh1750;
 Communication _comm = Communication(HC12_RX, HC12_TX, HC12_SET);
 byte err;
 
-
-void setup() {
+void setup()
+{
     Wire.begin();
     err = 0;
     pinMode(HC12_SET, OUTPUT);
     pinMode(UVOUT, INPUT);
     pinMode(BATTERY, INPUT);
 
-    if (!_bme280.begin(0x76)) {  // BME280_ADDRESS (0x76)
+    if (!_bme280.begin(0x76))
+    {
         err |= ERR_TEMPHUM;
     }
 
@@ -44,19 +44,21 @@ void setup() {
                         Adafruit_BME280::SAMPLING_X1, // Humidity
                         Adafruit_BME280::FILTER_OFF);
 
-    if (!_bh1750.begin(BH1750::ONE_TIME_LOW_RES_MODE)) { // Measurement at 4 lux resolution
+    if (!_bh1750.begin(BH1750::ONE_TIME_LOW_RES_MODE)) // Measurement at 4 lux resolution
+    {
         err |= ERR_LIGH;
     }
 
     _comm.begin(DEVICE_ID);
 
-    if (err) {
+    if (err)
+    {
         digitalWrite(13, HIGH);
     }
 }
 
-
-void loop() {
+void loop()
+{
 
     // Read samples from BME280
     _bme280.takeForcedMeasurement();
@@ -75,20 +77,22 @@ void loop() {
     // R1 = 463K
     // R2 = 1490K
     battery = (battery * 1953.0F) / 1490.0F;
-    if (battery < 3.5) {
+    if (battery < 3.6)
+    {
         err |= ERR_BATTERY;
     }
 
     // Read UV sensor voltage
     float outputVoltage = averageAnalogRead(UVOUT) * REF3V3 / 1024.0F;
     float uvIntensity = mapfloat(outputVoltage, 0.99, 2.9, 0.0, 15.0);
-    if (uvIntensity < 0) {
+    if (uvIntensity < 0)
+    {
         uvIntensity = 0;
     }
 
     // Generate message
     String output;
-    output =  "I" + String(sample_interval) + SEP_CHAR;
+    output = "I" + String(sample_interval) + SEP_CHAR;
     output += "S" + String(err, DEC) + SEP_CHAR;
     output += "B" + convertValue(battery) + SEP_CHAR;
     output += "T" + convertValue(temperature) + SEP_CHAR;
@@ -98,49 +102,48 @@ void loop() {
     output += "U" + convertValue(uvIntensity);
 
     // Send message
-    if (!_comm.sendMessage(output)) {
-        err |= ERR_COMM;
-    }
+    _comm.sendMessage(output) ? err ^= ERR_COMM : err |= ERR_COMM;
 
     // Wait until next sample
-    for (unsigned int i = 0 ;  i  <  sample_interval / 8; i++) {
+    for (unsigned int i = 0; i < sample_interval / 8; i++)
+    {
         LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
     }
 }
 
-
 String convertValue(float original)
 {
-   String value = String(original, 2);
-   String clean = "";
-   for (int i = 0; i < value.length(); i++)
-   {
+    String value = String(original, 2);
+    String clean = "";
+    for (int i = 0; i < value.length(); i++)
+    {
         if (value[i] != '.')
         {
             clean += value[i];
         }
-   }
-   return clean;
+    }
+    return clean;
 }
 
-
 // Takes an average of readings on a given pin
-int averageAnalogRead(int pinToRead) {
+int averageAnalogRead(int pinToRead)
+{
     byte numberOfReadings = 8;
     unsigned int runningValue = 0;
 
-    for(int i = 0; i < numberOfReadings; i++) {
+    for (int i = 0; i < numberOfReadings; i++)
+    {
         runningValue += analogRead(pinToRead);
         delay(200);
     }
     runningValue /= numberOfReadings;
 
-    return(runningValue);
+    return (runningValue);
 }
-
 
 // The Arduino Map function but for floats
 // From: http://forum.arduino.cc/index.php?topic=3922.0
-float mapfloat(float x, float in_min, float in_max, float out_min, float out_max) {
+float mapfloat(float x, float in_min, float in_max, float out_min, float out_max)
+{
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
