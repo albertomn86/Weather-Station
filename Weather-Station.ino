@@ -102,7 +102,7 @@ void loop()
     output += "U" + convertValue(uvIntensity);
 
     // Send message
-    _comm.sendMessage(output) ? err ^= ERR_COMM : err |= ERR_COMM;
+    _comm.sendMessage(output) ? err &= ~ERR_COMM : err |= ERR_COMM;
 
     // Wait until next sample
     for (unsigned int i = 0; i < sample_interval / 8; i++)
